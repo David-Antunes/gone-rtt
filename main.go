@@ -6,17 +6,49 @@ import (
 	"log"
 	"net"
 	"os"
-	"strings"
 	"time"
 
-	api "github.com/David-Antunes/gone-proxy/api"
+	"github.com/David-Antunes/gone-proxy/api"
+	"github.com/seancfoley/ipaddress-go/ipaddr"
 )
 
 var rttLog = log.New(os.Stdout, "RTT INFO: ", log.Ltime)
+var DEFAULT_PORT = ":8000"
+var DEFAULT_IFACE = "veth1"
 
 func main() {
-	//Configure IP and Broadcast Addr
-	listenAddr, err := net.ResolveUDPAddr("udp4", ":8000")
+	var err error
+	var ief *net.Interface
+	if ief, err = net.InterfaceByName(DEFAULT_IFACE); err == nil {
+		panic(err)
+	}
+
+	var addrs []net.Addr
+	if addrs, err = ief.Addrs(); err != nil {
+		panic(err)
+	}
+
+	var ip net.IP
+	var ipNet *net.IPNet
+
+	if ip, ipNet, err = net.ParseCIDR(addrs[0].String()); err != nil {
+		panic(err)
+	}
+
+	var bcast string
+
+	if adr, err := ipaddr.NewIPAddressFromNetIPNet(ipNet); err != nil {
+		panic(err)
+	} else {
+		b, _ := adr.ToIPv4().ToBroadcastAddress()
+		bcast = b.GetNetIPAddr().IP.String() + DEFAULT_PORT
+	}
+
+	rttLog.Println("IP address:", ip)
+
+	rttLog.Println("Broadcast Address:", bcast)
+
+	listenAddr, err := net.ResolveUDPAddr("udp4", bcast)
 
 	if err != nil {
 		panic(err)
@@ -30,33 +62,7 @@ func main() {
 		panic(err)
 	}
 
-	ief, err := net.InterfaceByName("eth0")
-
-	if err != nil {
-		panic(err)
-	}
-
-	addrs, err := ief.Addrs()
-
-	if err != nil {
-		panic(err)
-	}
-
-	ip := addrs[0].(*net.IPNet).IP.To4()
-
-	rttLog.Println("IP address:", ip)
-
-	splitAddr := strings.Split(addrs[0].String(), ".")
-
-	if len(splitAddr) != 4 {
-		panic("something went wrong with Ip address")
-	}
-
-	broadcastIp := splitAddr[0] + "." + splitAddr[1] + "." + splitAddr[2] + ".255:8000"
-
-	rttLog.Println("Broadcast Address:", broadcastIp)
-
-	conn, err := net.Dial("udp4", broadcastIp)
+	conn, err := net.Dial("udp4", bcast)
 
 	if err != nil {
 		panic(err)
