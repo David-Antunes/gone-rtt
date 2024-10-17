@@ -14,12 +14,12 @@ import (
 
 var rttLog = log.New(os.Stdout, "RTT INFO: ", log.Ltime)
 var DEFAULT_PORT = ":8000"
-var DEFAULT_IFACE = "veth1"
+var DEFAULT_IFACE = "eth0"
 
 func main() {
 	var err error
 	var ief *net.Interface
-	if ief, err = net.InterfaceByName(DEFAULT_IFACE); err == nil {
+	if ief, err = net.InterfaceByName(DEFAULT_IFACE); err != nil {
 		panic(err)
 	}
 
@@ -48,7 +48,7 @@ func main() {
 
 	rttLog.Println("Broadcast Address:", bcast)
 
-	listenAddr, err := net.ResolveUDPAddr("udp4", bcast)
+	listenAddr, err := net.ResolveUDPAddr("udp4", DEFAULT_PORT)
 
 	if err != nil {
 		panic(err)
