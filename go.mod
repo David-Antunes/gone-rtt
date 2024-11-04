@@ -3,7 +3,7 @@ module github.com/David-Antunes/gone-rtt
 go 1.23
 
 require (
-	github.com/David-Antunes/gone-proxy v1.1.0
+	github.com/David-Antunes/gone-proxy v1.1.1
 	github.com/seancfoley/ipaddress-go v1.7.0
 )
 
