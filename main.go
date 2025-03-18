@@ -2,11 +2,12 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"log"
 	"net"
 	"os"
 	"time"
+
+	"encoding/json"
 
 	"github.com/David-Antunes/gone-proxy/api"
 	"github.com/seancfoley/ipaddress-go/ipaddr"
@@ -104,5 +105,4 @@ func main() {
 		conn.Write(req)
 		rttLog.Println("StartTime:", resp.StartTime, "ReceiveTime:", resp.ReceiveTime, "Difference:", resp.ReceiveTime.Sub(resp.StartTime))
 	}
-
 }
